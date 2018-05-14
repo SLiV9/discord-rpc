@@ -250,9 +250,10 @@ def sign():
 @click.option('--clean', is_flag=True)
 @click.option('--static', is_flag=True)
 @click.option('--shared', is_flag=True)
+@click.option('--skip_examples', is_flag=True)
 @click.option('--skip_formatter', is_flag=True)
 @click.option('--just_release', is_flag=True)
-def libs(clean, static, shared, skip_formatter, just_release):
+def libs(clean, static, shared, skip_examples, skip_formatter, just_release):
     """ Do all the builds for this platform """
     if clean:
         shutil.rmtree('builds', ignore_errors=True)
@@ -277,6 +278,10 @@ def libs(clean, static, shared, skip_formatter, just_release):
         just_release = True
         static_options['WARNINGS_AS_ERRORS'] = True
         dynamic_options['WARNINGS_AS_ERRORS'] = True
+
+    if skip_examples or IS_BUILD_MACHINE:
+        static_options['BUILD_EXAMPLES'] = False
+        dynamic_options['BUILD_EXAMPLES'] = False
 
     if PLATFORM == 'win':
         generator32 = 'Visual Studio 14 2015'

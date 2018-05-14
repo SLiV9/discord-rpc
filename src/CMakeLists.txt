@@ -19,6 +19,21 @@ set(BASE_RPC_SRC
     msg_queue.h
 )
 
+if (WIN32)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        MESSAGE("64 bits compiler detected")
+        set(LIBRARY_EXTENSION "x64")
+    else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        MESSAGE("32 bits compiler detected")
+        set(LIBRARY_EXTENSION "x86")
+    endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(LIBRARY_NAME "discord-rpc.${LIBRARY_EXTENSION}")
+else(WIN32)
+    set(LIBRARY_NAME "discord-rpc")
+endif(WIN32)
+MESSAGE("LIBRARY_NAME is ${LIBRARY_NAME}")
+
+
 if (${BUILD_SHARED_LIBS})
     if(WIN32)
         set(BASE_RPC_SRC ${BASE_RPC_SRC} dllmain.cpp)
@@ -28,7 +43,7 @@ endif(${BUILD_SHARED_LIBS})
 if(WIN32)
     add_definitions(-DDISCORD_WINDOWS)
     set(BASE_RPC_SRC ${BASE_RPC_SRC} connection_win.cpp discord_register_win.cpp)
-    add_library(discord-rpc ${BASE_RPC_SRC})
+    add_library(${LIBRARY_NAME} ${BASE_RPC_SRC})
     if (MSVC)
         if(USE_STATIC_CRT)
             foreach(CompilerFlag
@@ -41,7 +56,7 @@ if(WIN32)
                 string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
             endforeach()
         endif(USE_STATIC_CRT)
-        target_compile_options(discord-rpc PRIVATE /EHsc
+        target_compile_options(${LIBRARY_NAME} PRIVATE /EHsc
             /Wall
             /wd4100 # unreferenced formal parameter
             /wd4514 # unreferenced inline
@@ -56,7 +71,7 @@ if(WIN32)
             /wd5027 # move assignment operator was implicitly defined as deleted
         )
     endif(MSVC)
-    target_link_libraries(discord-rpc PRIVATE psapi advapi32)
+    target_link_libraries(${LIBRARY_NAME} PRIVATE psapi advapi32)
 endif(WIN32)
 
 if(UNIX)
@@ -70,9 +85,9 @@ if(UNIX)
         set(BASE_RPC_SRC ${BASE_RPC_SRC} discord_register_linux.cpp)
     endif(APPLE)
 
-    add_library(discord-rpc ${BASE_RPC_SRC})
-    target_link_libraries(discord-rpc PUBLIC pthread)
-    target_compile_options(discord-rpc PRIVATE
+    add_library(${LIBRARY_NAME} ${BASE_RPC_SRC})
+    target_link_libraries(${LIBRARY_NAME} PUBLIC pthread)
+    target_compile_options(${LIBRARY_NAME} PRIVATE
         -g
         -Wall
         -Wextra
@@ -80,7 +95,7 @@ if(UNIX)
     )
 
     if (${WARNINGS_AS_ERRORS})
-      target_compile_options(discord-rpc PRIVATE -Werror)
+      target_compile_options(${LIBRARY_NAME} PRIVATE -Werror)
     endif (${WARNINGS_AS_ERRORS})
 
     target_compile_options(discord-rpc PRIVATE
@@ -96,34 +111,34 @@ if(UNIX)
     )
 
     if (${BUILD_SHARED_LIBS})
-        target_compile_options(discord-rpc PRIVATE -fPIC)
+        target_compile_options(${LIBRARY_NAME} PRIVATE -fPIC)
     endif (${BUILD_SHARED_LIBS})
 
     if (APPLE)
-        target_link_libraries(discord-rpc PRIVATE "-framework AppKit")
+        target_link_libraries(${LIBRARY_NAME} PRIVATE "-framework AppKit")
     endif (APPLE)
 endif(UNIX)
 
-target_include_directories(discord-rpc PRIVATE ${RAPIDJSON}/include)
+target_include_directories(${LIBRARY_NAME} PRIVATE ${RAPIDJSON}/include)
 
 if (NOT ${ENABLE_IO_THREAD})
-    target_compile_definitions(discord-rpc PUBLIC -DDISCORD_DISABLE_IO_THREAD)
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC -DDISCORD_DISABLE_IO_THREAD)
 endif (NOT ${ENABLE_IO_THREAD})
 
 if (${BUILD_SHARED_LIBS})
-    target_compile_definitions(discord-rpc PUBLIC -DDISCORD_DYNAMIC_LIB)
-    target_compile_definitions(discord-rpc PRIVATE -DDISCORD_BUILDING_SDK)
+    target_compile_definitions(${LIBRARY_NAME} PUBLIC -DDISCORD_DYNAMIC_LIB)
+    target_compile_definitions(${LIBRARY_NAME} PRIVATE -DDISCORD_BUILDING_SDK)
 endif(${BUILD_SHARED_LIBS})
 
 if (CLANG_FORMAT_CMD)
-    add_dependencies(discord-rpc clangformat)
+    add_dependencies(${LIBRARY_NAME} clangformat)
 endif(CLANG_FORMAT_CMD)
 
 # install
 
 install(
-    TARGETS discord-rpc
-    EXPORT "discord-rpc"
+    TARGETS ${LIBRARY_NAME}
+    EXPORT "${LIBRARY_NAME}"
     RUNTIME
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
     LIBRARY
