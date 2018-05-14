@@ -72,9 +72,9 @@ void Discord_Register(const char* applicationId, const char* command)
     }
 }
 
-void Discord_RegisterSteamGame(const char* applicationId, const char* steamId)
+void Discord_RegisterUplayGame(const char* applicationId, const char* uplayGameId)
 {
     char command[256];
-    snprintf(command, 256, "steam://rungameid/%s", steamId);
+    snprintf(command, 256, "uplay://launch/%s", uplayGameId);
     Discord_Register(applicationId, command);
 }

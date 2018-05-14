@@ -146,40 +146,40 @@ extern "C" DISCORD_EXPORT void Discord_Register(const char* applicationId, const
     Discord_RegisterW(appId, wcommand);
 }
 
-extern "C" DISCORD_EXPORT void Discord_RegisterSteamGame(const char* applicationId,
-                                                         const char* steamId)
+extern "C" DISCORD_EXPORT void Discord_RegisterUplayGame(const char* applicationId,
+                                                         const char* uplayGameId)
 {
     wchar_t appId[32];
     MultiByteToWideChar(CP_UTF8, 0, applicationId, -1, appId, 32);
 
-    wchar_t wSteamId[32];
-    MultiByteToWideChar(CP_UTF8, 0, steamId, -1, wSteamId, 32);
+    wchar_t wUplayGameId[32];
+    MultiByteToWideChar(CP_UTF8, 0, uplayGameId, -1, wUplayGameId, 32);
 
     HKEY key;
-    auto status = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Valve\\Steam", 0, KEY_READ, &key);
+    auto status = RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Ubisoft\\Uplay", 0, KEY_READ, &key);
     if (status != ERROR_SUCCESS) {
-        fprintf(stderr, "Error opening Steam key\n");
+        fprintf(stderr, "Error opening Uplay key\n");
         return;
     }
 
-    wchar_t steamPath[MAX_PATH];
-    DWORD pathBytes = sizeof(steamPath);
-    status = RegQueryValueExW(key, L"SteamExe", nullptr, nullptr, (BYTE*)steamPath, &pathBytes);
+    wchar_t uplayGamePath[MAX_PATH];
+    DWORD pathBytes = sizeof(uplayGamePath);
+    status = RegQueryValueExW(key, L"UplayExe", nullptr, nullptr, (BYTE*)uplayGamePath, &pathBytes);
     RegCloseKey(key);
     if (status != ERROR_SUCCESS || pathBytes < 1) {
-        fprintf(stderr, "Error reading SteamExe key\n");
+        fprintf(stderr, "Error reading UplayExe key\n");
         return;
     }
 
     DWORD pathChars = pathBytes / sizeof(wchar_t);
     for (DWORD i = 0; i < pathChars; ++i) {
-        if (steamPath[i] == L'/') {
-            steamPath[i] = L'\\';
+        if (uplayGamePath[i] == L'/') {
+            uplayGamePath[i] = L'\\';
         }
     }
 
     wchar_t command[1024];
-    StringCbPrintfW(command, sizeof(command), L"\"%s\" steam://rungameid/%s", steamPath, wSteamId);
+    StringCbPrintfW(command, sizeof(command), L"\"%s\" uplay://launch/%s", uplayGamePath, wUplayGameId);
 
     Discord_RegisterW(appId, command);
 }

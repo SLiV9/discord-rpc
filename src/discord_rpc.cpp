@@ -269,11 +269,11 @@ static bool DeregisterForEvent(const char* evtName)
 extern "C" DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                                   DiscordEventHandlers* handlers,
                                                   int autoRegister,
-                                                  const char* optionalSteamId)
+                                                  const char* optionalUplayGameId)
 {
     if (autoRegister) {
-        if (optionalSteamId && optionalSteamId[0]) {
-            Discord_RegisterSteamGame(applicationId, optionalSteamId);
+        if (optionalUplayGameId && optionalUplayGameId[0]) {
+            Discord_RegisterUplayGame(applicationId, optionalUplayGameId);
         }
         else {
             Discord_Register(applicationId, nullptr);

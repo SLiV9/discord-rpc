@@ -91,10 +91,10 @@ extern "C" DISCORD_EXPORT void Discord_Register(const char* applicationId, const
     }
 }
 
-extern "C" DISCORD_EXPORT void Discord_RegisterSteamGame(const char* applicationId,
-                                                         const char* steamId)
+extern "C" DISCORD_EXPORT void Discord_RegisterUplayGame(const char* applicationId,
+                                                         const char* uplayGameId)
 {
     char command[256];
-    sprintf(command, "xdg-open steam://rungameid/%s", steamId);
+    sprintf(command, "xdg-open uplay://launch/%s", uplayGameId);
     Discord_Register(applicationId, command);
 }
